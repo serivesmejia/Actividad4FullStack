@@ -1,5 +1,5 @@
 
-const controller = require('./PedidosController');
+const controller = require('./controllers/PedidosController');
 const express = require('express');
 
 const app = express();

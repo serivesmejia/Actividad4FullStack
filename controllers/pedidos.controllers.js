@@ -1,4 +1,4 @@
-const PedidosRepository = require('./PedidosRepository');
+const PedidosRepository = require('../repository/pedidos.repository');
 
 class PedidosController {
   constructor() {
