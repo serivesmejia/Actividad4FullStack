@@ -42,7 +42,7 @@ class ProductosRepository {
 
   async search({ nombre, minPrecio, maxPrecio, page = 1, limit = 5 }) {
     const params = [];
-    let query = "SELECT * FROM productos WHERE 1=1";
+    let query = "FROM productos WHERE 1=1";
 
     if (nombre && nombre.trim() !== "") {
       query += " AND nombre LIKE ?";
@@ -59,16 +59,27 @@ class ProductosRepository {
       params.push(Number(maxPrecio));
     }
 
+    const [countRows] = await this.pool.query(
+      `SELECT COUNT(*) as total ${query}`,
+      params
+    );
+    const total = countRows[0].total;
+    
     page = parseInt(page);
     limit = parseInt(limit);
     if (isNaN(page) || page < 1) page = 1;
     if (isNaN(limit) || limit < 1) limit = 5;
 
     const offset = (page - 1) * limit;
-    query += ` ORDER BY id DESC LIMIT ${limit} OFFSET ${offset}`;
 
-    const [rows] = await this.pool.query(query, params);
-    return rows;
+    const [rows] = await this.pool.query(`SELECT * ${query} ORDER BY id DESC LIMIT ? OFFSET ?`, [...params, limit, offset]);
+    
+    return {
+      data: rows,
+      page,
+      limit,
+      total
+    };
   }
 
   async update(id, data) {
