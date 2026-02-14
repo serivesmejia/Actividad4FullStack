@@ -5,81 +5,102 @@ class PedidosController {
     this.repository = new PedidosRepository();
   }
 
-  getAll(req, res) {
-    res.json(this.repository.findAll());
+  async getAll(req, res) {
+    try {
+      const pedidos = await this.repository.findAll();
+      res.json(pedidos);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
   }
 
-  getById(req, res) {
-    const id = Number(req.params.id);
-    const pedido = this.repository.findById(id);
+  async getById(req, res) {
+    try {
+      const id = Number(req.params.id);
+      const pedido = await this.repository.findById(id);
 
-    if (!pedido) {
-      return res.status(404).json({ message: 'Pedido no encontrado' });
+      if (!pedido) {
+        return res.status(404).json({ message: 'Pedido no encontrado' });
+      }
+
+      res.json(pedido);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
-
-    res.json(pedido);
   }
 
-  create(req, res) {
-    const { producto, cantidad } = req.body;
+  async create(req, res) {
+    try {
+      const { producto, cantidad } = req.body;
 
-    if (!producto || cantidad <= 0) {
-      return res.status(400).json({
-        message: 'La cantidad debe ser mayor a 0 y el producto es obligatorio'
-      });
+      if (!producto || cantidad <= 0) {
+        return res.status(400).json({
+          message: 'La cantidad debe ser mayor a 0 y el producto es obligatorio'
+        });
+      }
+
+      const nuevoPedido = {
+        producto,
+        cantidad,
+        estado: 'pendiente'
+      };
+
+      const pedidoCreado = await this.repository.create(nuevoPedido);
+      res.status(201).json(pedidoCreado);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
-
-    const nuevoPedido = {
-      producto,
-      cantidad,
-      estado: 'pendiente'
-    };
-
-    const pedidoCreado = this.repository.create(nuevoPedido);
-    res.status(201).json(pedidoCreado);
   }
 
-  update(req, res) {
-    const id = Number(req.params.id);
-    const { estado } = req.body;
+  async update(req, res) {
+    try {
+      const id = Number(req.params.id);
+      const { estado } = req.body;
 
-    const pedido = this.repository.findById(id);
-    if (!pedido) {
-      return res.status(404).json({ message: 'Pedido no encontrado' });
+      const pedido = await this.repository.findById(id);
+      if (!pedido) {
+        return res.status(404).json({ message: 'Pedido no encontrado' });
+      }
+
+      if (pedido.estado !== 'pendiente') {
+        return res.status(400).json({
+          message: `No se puede modificar un pedido en estado ${pedido.estado}`
+        });
+      }
+
+      if (!['confirmado', 'cancelado'].includes(estado)) {
+        return res.status(400).json({
+          message: 'Cambio de estado inválido'
+        });
+      }
+
+      const actualizado = await this.repository.update(id, { estado });
+      res.json(actualizado);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
-
-    if (pedido.estado !== 'pendiente') {
-      return res.status(400).json({
-        message: `No se puede modificar un pedido en estado ${pedido.estado}`
-      });
-    }
-
-    if (!['confirmado', 'cancelado'].includes(estado)) {
-      return res.status(400).json({
-        message: 'Cambio de estado inválido'
-      });
-    }
-
-    const actualizado = this.repository.update(id, { estado });
-    res.json(actualizado);
   }
 
-  delete(req, res) {
-    const id = Number(req.params.id);
-    const pedido = this.repository.findById(id);
+  async delete(req, res) {
+    try {
+      const id = Number(req.params.id);
+      const pedido = await this.repository.findById(id);
 
-    if (!pedido) {
-      return res.status(404).json({ message: 'Pedido no encontrado' });
+      if (!pedido) {
+        return res.status(404).json({ message: 'Pedido no encontrado' });
+      }
+
+      if (pedido.estado !== 'pendiente') {
+        return res.status(400).json({
+          message: 'Solo se pueden eliminar pedidos pendientes'
+        });
+      }
+
+      await this.repository.delete(id);
+      res.status(204).send();
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
-
-    if (pedido.estado !== 'pendiente') {
-      return res.status(400).json({
-        message: 'Solo se pueden eliminar pedidos pendientes'
-      });
-    }
-
-    this.repository.delete(id);
-    res.status(204).send();
   }
 }
 
