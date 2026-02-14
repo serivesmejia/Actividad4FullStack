@@ -56,11 +56,26 @@ class PedidosController {
 
   async search(req, res) {
     try {
-      const producto = req.query.producto;
-      const minPrecio = req.query.minPrecio;
-      const maxPrecio = req.query.maxPrecio;
-      const page = req.query.page;
-      const limit = req.query.limit;
+      let producto = req.query.producto;
+      let minPrecio = req.query.minPrecio;
+      let maxPrecio = req.query.maxPrecio;
+      let page = req.query.page;
+      let limit = req.query.limit;
+
+      // tirar error si no especifican producto
+      if (!producto) {
+        return res.status(400).json({ message: "El parámetro 'producto' es obligatorio" });
+      }
+      
+      // asignar defaults en caso de que no se proporcionen
+      if (!page) page = 1;
+      if (!limit) limit = 5;
+
+      // convertir a números
+      minPrecio = minPrecio ? Number(minPrecio) : undefined;
+      maxPrecio = maxPrecio ? Number(maxPrecio) : undefined;
+      page = Number(page);
+      limit = Number(limit);
 
       const result = await this.repository.search({
         producto,
