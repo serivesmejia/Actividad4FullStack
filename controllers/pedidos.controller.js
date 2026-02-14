@@ -31,15 +31,16 @@ class PedidosController {
 
   async create(req, res) {
     try {
-      const { producto, cantidad } = req.body;
+      const { cliente, producto, cantidad } = req.body;
 
-      if (!producto || cantidad <= 0) {
+      if (!cliente || !producto || cantidad <= 0) {
         return res.status(400).json({
-          message: 'La cantidad debe ser mayor a 0 y el producto es obligatorio'
+          message: 'Cliente, producto y cantidad válida son obligatorios'
         });
       }
 
       const nuevoPedido = {
+        cliente,
         producto,
         cantidad,
         estado: 'pendiente'
@@ -47,6 +48,7 @@ class PedidosController {
 
       const pedidoCreado = await this.repository.create(nuevoPedido);
       res.status(201).json(pedidoCreado);
+
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
