@@ -37,24 +37,9 @@ class PedidosRepository {
     return { id: result.insertId, ...pedido };
   }
 
-  async search({ producto, minPrecio, maxPrecio, page = 1, limit = 5 }) {
-    let query = "SELECT * FROM productos WHERE 1=1";
-    const params = [];
-
-    if (producto) {
-      query += " AND producto LIKE ?";
-      params.push(`%${producto}%`);
-    }
-
-    if (minPrecio !== undefined) {
-      query += " AND precio >= ?";
-      params.push(minPrecio);
-    }
-
-    if (maxPrecio !== undefined) {
-      query += " AND precio <= ?";
-      params.push(maxPrecio);
-    }
+  async search({ producto, page = 1, limit = 5 }) {
+    let query = "SELECT * FROM pedidos WHERE producto LIKE ?";
+    const params = [`%${producto}%`];
 
     query += " ORDER BY id DESC LIMIT ? OFFSET ?";
 
@@ -65,6 +50,7 @@ class PedidosRepository {
 
     return rows;
   }
+
 
   async update(id, data) {
     const fields = Object.keys(data);

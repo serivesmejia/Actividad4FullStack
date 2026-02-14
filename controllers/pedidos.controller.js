@@ -60,18 +60,23 @@ class PedidosController {
       let page = req.query.page;
       let limit = req.query.limit;
 
-      // tirar error si no especifican producto
       if (!producto) {
-        return res.status(400).json({ message: "El parámetro 'producto' es obligatorio" });
+        return res.status(400).json({
+          message: "El parámetro 'producto' es obligatorio"
+        });
       }
-      
-      // asignar defaults en caso de que no se proporcionen
+
       if (!page) page = 1;
       if (!limit) limit = 5;
 
-      // convertir a números
       page = Number(page);
       limit = Number(limit);
+
+      if (isNaN(page) || isNaN(limit)) {
+        return res.status(400).json({
+          message: "page y limit deben ser números"
+        });
+      }
 
       const result = await this.repository.search({
         producto,
@@ -80,6 +85,7 @@ class PedidosController {
       });
 
       res.json(result);
+
     } catch (err) {
       console.log(err);
       res.status(500).json({ message: "error" });
