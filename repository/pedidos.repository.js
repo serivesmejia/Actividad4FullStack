@@ -58,8 +58,6 @@ class PedidosRepository {
 
     query += " ORDER BY id DESC LIMIT ? OFFSET ?";
 
-    const offset = (page - 1) * limit;
-
     const [rows] = await this.pool.query(query, params);
 
     return rows;
