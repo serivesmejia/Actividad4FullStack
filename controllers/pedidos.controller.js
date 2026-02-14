@@ -39,16 +39,9 @@ class PedidosController {
         });
       }
 
-      const nuevoPedido = {
-        cliente,
-        producto,
-        cantidad,
-        estado: 'pendiente'
-      };
-
+      const nuevoPedido = { cliente, producto, cantidad, estado: 'pendiente' };
       const pedidoCreado = await this.repository.create(nuevoPedido);
       res.status(201).json(pedidoCreado);
-
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
@@ -56,38 +49,26 @@ class PedidosController {
 
   async search(req, res) {
     try {
-      let producto = req.query.producto;
-      let page = req.query.page;
-      let limit = req.query.limit;
+      const { producto, cliente } = req.query;
+      let page = parseInt(req.query.page);
+      let limit = parseInt(req.query.limit);
 
-      if (!producto) {
-        return res.status(400).json({
-          message: "El parámetro 'producto' es obligatorio"
-        });
+      if (!producto && !cliente) {
+        return res.status(400).json({ message: "Debes enviar producto o cliente" });
       }
 
-      if (!page) page = 1;
-      if (!limit) limit = 5;
-
-      page = Number(page);
-      limit = Number(limit);
-
-      if (isNaN(page) || isNaN(limit)) {
-        return res.status(400).json({
-          message: "page y limit deben ser números"
-        });
-      }
+      if (isNaN(page) || page < 1) page = 1;
+      if (isNaN(limit) || limit < 1) limit = 5;
 
       const result = await this.repository.search({
         producto,
+        cliente,
         page,
         limit
       });
 
       res.json(result);
-
     } catch (err) {
-      console.log(err);
       res.status(500).json({ message: "error" });
     }
   }
@@ -109,9 +90,7 @@ class PedidosController {
       }
 
       if (!['confirmado', 'cancelado'].includes(estado)) {
-        return res.status(400).json({
-          message: 'Cambio de estado inválido'
-        });
+        return res.status(400).json({ message: 'Cambio de estado inválido' });
       }
 
       const actualizado = await this.repository.update(id, { estado });
