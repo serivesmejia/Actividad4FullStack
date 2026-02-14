@@ -57,8 +57,6 @@ class PedidosController {
   async search(req, res) {
     try {
       let producto = req.query.producto;
-      let minPrecio = req.query.minPrecio;
-      let maxPrecio = req.query.maxPrecio;
       let page = req.query.page;
       let limit = req.query.limit;
 
@@ -72,15 +70,11 @@ class PedidosController {
       if (!limit) limit = 5;
 
       // convertir a números
-      minPrecio = minPrecio ? Number(minPrecio) : undefined;
-      maxPrecio = maxPrecio ? Number(maxPrecio) : undefined;
       page = Number(page);
       limit = Number(limit);
 
       const result = await this.repository.search({
         producto,
-        minPrecio,
-        maxPrecio,
         page,
         limit
       });
