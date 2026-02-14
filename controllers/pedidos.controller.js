@@ -54,6 +54,29 @@ class PedidosController {
     }
   }
 
+  async search(req, res) {
+    try {
+      const producto = req.query.producto;
+      const minPrecio = req.query.minPrecio;
+      const maxPrecio = req.query.maxPrecio;
+      const page = req.query.page;
+      const limit = req.query.limit;
+
+      const result = await this.repository.search({
+        producto,
+        minPrecio,
+        maxPrecio,
+        page,
+        limit
+      });
+
+      res.json(result);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: "error" });
+    }
+  }
+
   async update(req, res) {
     try {
       const id = Number(req.params.id);
